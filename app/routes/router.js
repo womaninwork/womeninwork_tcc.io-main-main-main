@@ -306,6 +306,10 @@ router.get("/pagamento", function (req, res) {
   res.render("pages/pagamento", { pagina: "pagamento", logado: null });
 });
 
+router.get("/cursos_logado", function (req, res) {
+  res.render("pages/cursos_logado", { pagina: "cursos_logado", logado: null });
+});
+
 router.get("/perfil_comum", async (req, res) => {
   var nome = req.session.nome;
   const id = req.session.userid;
