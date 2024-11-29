@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs")
@@ -22,13 +23,8 @@ const uploadFile = require("../util/uploader")("./app/public/imagem/perfil/");
 const perfilController = require("../controllers/perfilController");
 
 // SDK do Mercado Pago
-const { MercadoPagoConfig, Preference } = require('mercadopago');
 const { pedidoController } = require("../controllers/pedidoController");
 const usuarioModel = require("../models/usuarioModel");
-// Adicione as credenciais
-const client = new MercadoPagoConfig({
-  accessToken: process.env.accessToken
-});
 
 router.post("/create-preference", function (req, res) {
   const preference = new Preference(client);
@@ -354,12 +350,12 @@ router.post("/alterImage", upload.single("picture__input"), async (req, res) => 
 
 
 router.get("/perfil_prof", async function (req, res) {
-  
+
   const id = req.session.userid;
 
-  const [user] = await pool.query("SELECT nome_usuario FROM usuario WHERE id_usuario = ? LIMIT 1",[id])
+  const [user] = await pool.query("SELECT nome_usuario FROM usuario WHERE id_usuario = ? LIMIT 1", [id])
 
-  const name = user[0] ? user[0].nome_usuario : "usuario não encontrado" 
+  const name = user[0] ? user[0].nome_usuario : "usuario não encontrado"
 
   res.render("pages/perfil_prof", { pagina: "perfil_prof", logado: null, name: name });
 });
@@ -450,17 +446,77 @@ router.post("/cadastroProfessor", async (req, res) => {
   const hashedPassword = bcrypt.hashSync(senha, hash)
 
   const [newUser] = await pool.query("INSERT INTO usuario(nome_usuario, email_usuario, celular_usuario, senha_usuario, sobrenome_usuario) VALUES (?, ?, ?, ?, ?)", [nome, email, celular, hashedPassword, sobrenome])
-  
+
   const [dataForSession] = await pool.query("SELECT * FROM usuario WHERE id_usuario = ? LIMIT 1", [newUser.insertId])
   const newData = dataForSession[0]
 
   req.session.userid = newData.id_usuario;
   req.session.nome = newData.nome_usuario; // Salvando o nome do usuário
   req.session.email = newData.email_usuario;
-  
+
   return req.session.save(() => {
     res.redirect("/perfil_prof")
   });
+
+})
+
+//  mercado pago
+const { MercadoPagoConfig, Preference } = require('mercadopago');
+
+const client = new MercadoPagoConfig({
+  accessToken: process.env.acessToken,
+  options: { timeout: 5000, idempotencyKey: 'abc' }
+});
+const preference = new Preference(client);
+
+
+router.get("/curso/:id", async function (req, res) {
+  const { id } = req.params;
+
+  let [curso] = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [id]);
+
+  curso = curso[0];
+
+  res.render("pages/cursoForId.ejs", { curso: curso })
+})
+
+router.post("/getCuorse", async function (req, res) {
+  const { value, id } = req.body;
+
+  let [curso] = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [id])
+  curso = curso[0]
+
+  const baseUrl = req.protocol + '://' + req.get('host');
+  const body = {
+    items: [
+      {
+        id: String(id),
+        title: curso.nome_curso,
+        description: curso.descricao_cursos,
+        quantity: 1,
+        currency_id: 'BRL',
+        unit_price: parseInt(curso.preco_curso)
+      },
+    ],
+    back_urls: {
+      success: `${baseUrl}/retornoCompra?passou`,
+      failure: `${baseUrl}/retornoCompra?erro`,
+      pending: `${baseUrl}/retornoCompra?erro`,
+    },
+    auto_return: 'all'
+  }
+
+  preference.create({ body })
+    .then(response => {
+      const initPoint = response.init_point;
+      res.status(200).redirect(initPoint)
+    })
+    .catch(error => {
+      console.log(error)
+      req.flash("error", errorMessages.INTERNAL_ERROR);
+      return res.status(500).redirect(`/store/points`)
+    });
+
 })
 
 module.exports = router;

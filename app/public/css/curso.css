@@ -1,0 +1,26 @@
+main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 1rem;
+}
+
+main .curso section {
+    padding: 0;
+}
+
+main .curso .image img {
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+main .curso input[type="submit"] {
+    border: 0;
+    padding: 0.8rem;
+    color: #fff;
+    background-color: #887EFF;
+    border-radius: 12px;
+}
