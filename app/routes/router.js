@@ -327,18 +327,18 @@ router.get("/perfil_comum", async (req, res) => {
 
     let cursosFront = [];
 
-    if(cursos.length > 0) {
+    if (cursos.length > 0) {
       for (const cursoId of cursos) {
         let item = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [cursoId]);
-        
+
         cursosFront.push(item[0][0])
       }
-  
+
       cursosFront.forEach(element => {
         console.log(element)
       });
     }
-    
+
     res.render("pages/perfil_comum", {
       pagina: "perfil_comum",
       logado: null,
@@ -481,6 +481,7 @@ router.post("/cadastroProfessor", async (req, res) => {
 
 //  mercado pago
 const { MercadoPagoConfig, Preference } = require('mercadopago');
+const session = require('express-session');
 
 const client = new MercadoPagoConfig({
   accessToken: process.env.acessToken,
@@ -525,19 +526,19 @@ router.post("/getCuorse", async function (req, res) {
     auto_return: 'all'
   }
 
-  if(req.session.userid == undefined || req.session.userid == null) {
+  if (req.session.userid == undefined || req.session.userid == null) {
     return res.send('Faça login')
   } else {
     preference.create({ body })
-    .then(response => {
-      const initPoint = response.init_point;
-      res.status(200).redirect(initPoint)
-    })
-    .catch(error => {
-      console.log(error)
-      req.flash("error", errorMessages.INTERNAL_ERROR);
-      return res.status(500).redirect(`/store/points`)
-    });
+      .then(response => {
+        const initPoint = response.init_point;
+        res.status(200).redirect(initPoint)
+      })
+      .catch(error => {
+        console.log(error)
+        req.flash("error", errorMessages.INTERNAL_ERROR);
+        return res.status(500).redirect(`/store/points`)
+      });
   }
 
 })
@@ -552,19 +553,47 @@ router.get('/retornoCompra', async function (req, res) {
   if (params.has('passou')) {
     let [user] = await pool.query("SELECT * FROM usuario WHERE id_usuario = ? LIMIT 1", [req.session.userid]);
     user = user[0];
-    
+
     const comprados = user.comprados ? JSON.parse(user.comprados) : [];
-    comprados.push(req.session.comprando); 
-    
+    comprados.push(req.session.comprando);
+
     const novosComprados = JSON.stringify(comprados);
-    
+
     await pool.query("UPDATE usuario SET comprados = ? WHERE id_usuario = ?", [novosComprados, req.session.userid]);
-    
+
     res.redirect('/perfil_comum');
   } else {
     return res.send("Erro ao comprar");
   }
 });
 
+router.get("/sair", function (req, res) {
+  try {
+    req.session.destroy(() => {
+      res.status(200).redirect("/sign/in");
+    });
+  } catch (error) {
+    console.log(error)
+    return res.status(500).redirect("/");
+  }
+})
+
+router.get("/editarperfil", async function (req, res) {
+  const id = req.session.userid;
+  if (!id) {
+    return res.send("Faça login")
+  }
+  let [user] = await pool.query("SELECT * FROM usuario WHERE id_usuario = ? LIMIT 1", [id])
+  user = user[0]
+  console.log(user)
+  res.render("pages/editar.ejs", { user: user })
+})
+
+router.post("/editarperfil", async function (req, res) {
+  const { id, nome, sobrenome, email, celular } = req.body;
+  console.log(id)
+  await pool.query("UPDATE usuario SET nome_usuario = ?, sobrenome_usuario = ?, email_usuario = ?, celular_usuario = ? WHERE id_usuario = ?", [nome, sobrenome, email, celular, id])
+  res.redirect("/perfil_comum")
+})
 
 module.exports = router;

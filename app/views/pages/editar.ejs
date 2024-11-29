@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/cadastro.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/simple-notify@0.5.5/dist/simple-notify.min.js"></script>
+    <title>Editar perfil</title>
+</head>
+<body>
+    <div class="container">
+        <div class="form-image">
+    <img src="imagem/mulheres.png">
+</div>
+<div class="form">
+    <form action="/editarperfil" method="POST" id="registrationForm">
+        <div class="form-header">
+            <div class="title">
+                <h1>Editar perfil</h1>
+            </div>
+        </div>
+        
+        <input type="hidden" name="id" value="<%= user.id_usuario %>">
+
+        <div class="input-group">
+            <div class="input-box">
+                <label for="firstname">Primeiro Nome</label>
+                <input id="firstname" type="text" name="nome" placeholder="Digite seu primeiro nome" value="<%= user.nome_usuario %>" required>
+            </div>
+    
+            <div class="input-box">
+                <label for="lastname">Sobrenome</label>
+                <input id="lastname" type="text" name="sobrenome" placeholder="Digite seu sobrenome" value="<%= user.sobrenome_usuario %>" required>
+            </div>
+            
+            <div class="input-box">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" name="email" placeholder="Digite seu e-mail" value="<%= user.email_usuario %>" required>
+            </div>
+            <div class="input-box">
+                <label for="number">Celular</label>
+                <input id="number" type="tel" name="celular" placeholder="(xx) xxxx-xxxx" value="<%= user.celular_usuario %>" required>
+            </div>
+    
+        </div>
+    
+        <div class="continue-button">
+            <button type="submit">Editar</button>
+        </div>
+    </form>
+    
+</div>
+</div>
+
+<!--LINKS JAVASCRIPT-->
+<script
+src="https://kit.fontawesome.com/f9e19193d6.js" crossorigin="anonymous"></script>
+
+
+<script src="Z:\WIW\cadastro_autônomo\form.js"></script>
+
+</body>
+</html>
