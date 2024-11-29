@@ -327,15 +327,17 @@ router.get("/perfil_comum", async (req, res) => {
 
     let cursosFront = [];
 
-    for (const cursoId of cursos) {
-      let item = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [cursoId]);
-      
-      cursosFront.push(item[0][0])
+    if(cursos.length > 0) {
+      for (const cursoId of cursos) {
+        let item = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [cursoId]);
+        
+        cursosFront.push(item[0][0])
+      }
+  
+      cursosFront.forEach(element => {
+        console.log(element)
+      });
     }
-
-    cursosFront.forEach(element => {
-      console.log(element)
-    });
     
     res.render("pages/perfil_comum", {
       pagina: "perfil_comum",

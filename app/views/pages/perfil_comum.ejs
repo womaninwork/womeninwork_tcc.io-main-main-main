@@ -150,27 +150,33 @@
   <!--INICIO CARD DOS CURSOS-->
   <section class="container_cursos">
 
-    <% cursosFront.forEach(element => { %>
-      <article class="card card-1">
-        <!--CARD HEADER-->
-        <article class="card-header">
-          <img src="<%= element.image %>" class="card-img" />
+    <% if (cursosFront.lenght > 0) { %>
+     
+      <% cursosFront.forEach(element => { %>
+        <article class="card card-1">
+          <!--CARD HEADER-->
+          <article class="card-header">
+            <img src="<%= element.image %>" class="card-img" />
+          </article>
+    
+          <!--CARD BODY-->
+          <section class="card-body">
+            <h2 class="card-titulo"><%= element.nome_curso %></h2>
+            <p class="card-texto">
+              <%= element.descricao_cursos %>
+            </p>
+          </section>
+    
+          <!--CARD FOOTER-->
+          <section class="card-footer">
+            <button><a href="/<%= element.image %>">Continuar</a></button>
+          </section>
         </article>
-  
-        <!--CARD BODY-->
-        <section class="card-body">
-          <h2 class="card-titulo"><%= element.nome_curso %></h2>
-          <p class="card-texto">
-            <%= element.descricao_cursos %>
-          </p>
-        </section>
-  
-        <!--CARD FOOTER-->
-        <section class="card-footer">
-          <button><a href="/<%= element.image %>">Continuar</a></button>
-        </section>
-      </article>
-    <% }) %>
+      <% }) %>
+
+    <% } else { %>
+        <h1>sem cursos</h1>
+    <% } %>
 
   </section>
 
