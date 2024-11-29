@@ -117,28 +117,32 @@
     <!-- main -->
 
     <main>
-        <section class="curso">
-            <section class="image">
-                <img src="<%= curso.image != undefined ? curso.image : '' %>" alt="Imagem do Curso">
+        <% if (curso) { %>
+            <section class="curso">
+                <section class="image">
+                    <img src="<%= curso.image %>" alt="Imagem do Curso">
+                </section>
+                <section class="description">
+                    <section>
+                        <h2><%= curso.nome_curso %></h2>
+                        <span><%= curso.categoria_curso %></span>
+                        <p><%= curso.descricao_cursos %></p>
+                    </section>
+                    <section>
+                        <p>Tempo: <%= curso.duraco_curso %></p>
+                    </section>
+                    <section>
+                        <form action="/getCuorse" method="post">
+                            <input type="hidden" name="value" value="<%= curso.preco_curso %>">
+                            <input type="hidden" name="id" value="<%= curso.id_cursos %>">
+                            <input type="submit" value="Comprar: <%= curso.preco_curso %> reais">
+                        </form>
+                    </section>
+                </section>
             </section>
-            <section class="description">
-                <section>
-                    <h2><%= curso.nome_curso %></h2>
-                    <span><%= curso.categoria_curso %></span>
-                    <p><%= curso.descricao_cursos %></p>
-                </section>
-                <section>
-                    <p>Tempo: <%= curso.duraco_curso %></p>
-                </section>
-                <section>
-                    <form action="/getCuorse" method="post">
-                        <input type="hidden" name="value" value="<%= curso.preco_curso %>">
-                        <input type="hidden" name="id" value="<%= curso.id_cursos %>">
-                        <input type="submit" value="Comprar: <%= curso.preco_curso %> reais">
-                    </form>
-                </section>
-            </section>
-        </section>
+        <% } else { %>
+            <h1>Curso não encontrado</h1>
+        <% } %>
     </main>
 
     <!--INICIO DO FOOTER-->

@@ -321,14 +321,31 @@ router.get("/perfil_comum", async (req, res) => {
     const imageBase64 = imageBuffer ? imageBuffer.toString('base64') : null;
 
     // Passar a imagem para o template EJS
+
+    let [cursos] = await pool.query("SELECT * FROM usuario WHERE id_usuario = ? LIMIT 1", [req.session.userid])
+    cursos = JSON.parse(cursos[0].comprados)
+
+    let cursosFront = [];
+
+    for (const cursoId of cursos) {
+      let item = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [cursoId]);
+      
+      cursosFront.push(item[0][0])
+    }
+
+    cursosFront.forEach(element => {
+      console.log(element)
+    });
+    
     res.render("pages/perfil_comum", {
       pagina: "perfil_comum",
       logado: null,
       nome: nome,
       image: imageBase64,
+      cursosFront: cursosFront
     });
   } else {
-    res.send("Faça login")
+    res.redirect("/escolha_user")
   }
 });
 
@@ -485,7 +502,7 @@ router.post("/getCuorse", async function (req, res) {
 
   let [curso] = await pool.query("SELECT * FROM cursos WHERE id_cursos = ? LIMIT 1", [id])
   curso = curso[0]
-
+  req.session.comprando = id
   const baseUrl = req.protocol + '://' + req.get('host');
   const body = {
     items: [
@@ -506,7 +523,10 @@ router.post("/getCuorse", async function (req, res) {
     auto_return: 'all'
   }
 
-  preference.create({ body })
+  if(req.session.userid == undefined || req.session.userid == null) {
+    return res.send('Faça login')
+  } else {
+    preference.create({ body })
     .then(response => {
       const initPoint = response.init_point;
       res.status(200).redirect(initPoint)
@@ -516,7 +536,33 @@ router.post("/getCuorse", async function (req, res) {
       req.flash("error", errorMessages.INTERNAL_ERROR);
       return res.status(500).redirect(`/store/points`)
     });
+  }
 
 })
+
+router.get('/retornoCompra', async function (req, res) {
+  const params = new URLSearchParams(req.query);
+
+  if (req.session.userid == undefined || req.session.userid == null) {
+    return res.send('Faça login');
+  }
+
+  if (params.has('passou')) {
+    let [user] = await pool.query("SELECT * FROM usuario WHERE id_usuario = ? LIMIT 1", [req.session.userid]);
+    user = user[0];
+    
+    const comprados = user.comprados ? JSON.parse(user.comprados) : [];
+    comprados.push(req.session.comprando); 
+    
+    const novosComprados = JSON.stringify(comprados);
+    
+    await pool.query("UPDATE usuario SET comprados = ? WHERE id_usuario = ?", [novosComprados, req.session.userid]);
+    
+    res.redirect('/perfil_comum');
+  } else {
+    return res.send("Erro ao comprar");
+  }
+});
+
 
 module.exports = router;
